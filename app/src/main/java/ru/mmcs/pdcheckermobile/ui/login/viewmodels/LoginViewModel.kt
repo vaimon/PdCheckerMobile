@@ -1,14 +1,15 @@
 package ru.mmcs.pdcheckermobile.ui.login.viewmodels
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import android.util.Patterns
+import android.util.Log
+import androidx.lifecycle.*
+import com.android.volley.RequestQueue
+import kotlinx.coroutines.launch
 import ru.mmcs.pdcheckermobile.data.LoginRepository
 import ru.mmcs.pdcheckermobile.utils.Result
 
 import ru.mmcs.pdcheckermobile.R
-import ru.mmcs.pdcheckermobile.ui.login.LoggedInUserView
+import ru.mmcs.pdcheckermobile.data.services.AuthenticationService
+import ru.mmcs.pdcheckermobile.data.services.SharedPreferencesService
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
 
@@ -18,19 +19,37 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
 
-    fun login(username: String, password: String) {
-        val result = loginRepository.login(username, password)
+    private val _isRegistrationMode = MutableLiveData<Boolean>(false)
+    val isRegistrationMode: LiveData<Boolean> = _isRegistrationMode
 
-        if (result is Result.Success) {
-            _loginResult.value =
-                LoginResult(success = LoggedInUserView(displayName = result.data.displayName))
-        } else {
-            _loginResult.value = LoginResult(error = R.string.login_failed)
+    private val _isLoading = MutableLiveData<Boolean>(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
+    fun login(username: String, password: String, name: String, role: String) {
+        _isLoading.value = true
+        if(isRegistrationMode.value!!){
+            return
+        }
+        viewModelScope.launch {
+            val result = loginRepository.login(username, password)
+
+            if (result is Result.Success) {
+                _loginResult.value =
+                    LoginResult(success = true)
+            } else {
+                Log.d("Error",result.toString())
+                _loginResult.value = LoginResult(error = R.string.login_failed)
+            }
+            _isLoading.value = false
         }
     }
 
+    fun toggleMode(){
+        _isRegistrationMode.value = !_isRegistrationMode.value!!
+    }
+
     fun loginDataChanged(username: String, password: String) {
-        if (!isUserNameValid(username)) {
+        if (username.isBlank()) {
             _loginForm.value = LoginFormState(usernameError = R.string.invalid_username)
         } else if (!isPasswordValid(password)) {
             _loginForm.value = LoginFormState(passwordError = R.string.invalid_password)
@@ -39,18 +58,9 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         }
     }
 
-    // A placeholder username validation check
-    private fun isUserNameValid(username: String): Boolean {
-        return if (username.contains('@')) {
-            Patterns.EMAIL_ADDRESS.matcher(username).matches()
-        } else {
-            username.isNotBlank()
-        }
-    }
-
     // A placeholder password validation check
     private fun isPasswordValid(password: String): Boolean {
-        return password.length > 5
+        return password.length > 4
     }
 
     data class LoginFormState(
@@ -60,7 +70,22 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     )
 
     data class LoginResult(
-        val success: LoggedInUserView? = null,
+        val success: Boolean = false,
         val error: Int? = null
     )
+
+    class LoginViewModelFactory(val queue: RequestQueue) : ViewModelProvider.Factory {
+
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
+                return LoginViewModel(
+                    loginRepository = LoginRepository(
+                        authService = AuthenticationService(queue),
+                        spService = SharedPreferencesService()
+                    )
+                ) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
+    }
 }

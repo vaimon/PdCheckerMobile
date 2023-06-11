@@ -12,11 +12,11 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.Toast
+import com.android.volley.toolbox.Volley
 import ru.mmcs.pdcheckermobile.databinding.ActivityLoginBinding
 
 import ru.mmcs.pdcheckermobile.R
 import ru.mmcs.pdcheckermobile.ui.login.viewmodels.LoginViewModel
-import ru.mmcs.pdcheckermobile.ui.login.viewmodels.LoginViewModelFactory
 import ru.mmcs.pdcheckermobile.utils.Extensions.afterTextChanged
 
 class LoginActivity : AppCompatActivity() {
@@ -30,8 +30,17 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
+        loginViewModel = ViewModelProvider(this,
+            LoginViewModel.LoginViewModelFactory(Volley.newRequestQueue(this))
+        )
             .get(LoginViewModel::class.java)
+
+        binding.viewModel = loginViewModel
+        binding.lifecycleOwner = this
+
+        binding.modeToggle.setOnClickListener {
+            loginViewModel.toggleMode()
+        }
 
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
@@ -53,13 +62,11 @@ class LoginActivity : AppCompatActivity() {
             if (loginResult.error != null) {
                 showLoginFailed(loginResult.error)
             }
-            if (loginResult.success != null) {
-                updateUiWithUser(loginResult.success)
+            if (loginResult.success) {
+                // TODO
             }
             setResult(Activity.RESULT_OK)
-
-            //Complete and destroy login activity once successful
-            finish()
+//            finish()
         })
 
         binding.username.afterTextChanged {
@@ -77,32 +84,10 @@ class LoginActivity : AppCompatActivity() {
                 )
             }
 
-            setOnEditorActionListener { _, actionId, _ ->
-                when (actionId) {
-                    EditorInfo.IME_ACTION_DONE ->
-                        loginViewModel.login(
-                            binding.username.text.toString(),
-                            binding.password.text.toString()
-                        )
-                }
-                false
-            }
-
             binding.login.setOnClickListener {
-                loginViewModel.login(binding.username.text.toString(), binding.password.text.toString())
+                loginViewModel.login(binding.username.text.toString(), binding.password.text.toString(), binding.name.text.toString(), if (binding.role.isChecked) "judge" else "student")
             }
         }
-    }
-
-    private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
-        // TODO : initiate successful logged in experience
-        Toast.makeText(
-            applicationContext,
-            "$welcome $displayName",
-            Toast.LENGTH_LONG
-        ).show()
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {

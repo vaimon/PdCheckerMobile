@@ -8,6 +8,7 @@ import ru.mmcs.pdcheckermobile.data.LoginRepository
 import ru.mmcs.pdcheckermobile.utils.Result
 
 import ru.mmcs.pdcheckermobile.R
+import ru.mmcs.pdcheckermobile.data.models.User
 import ru.mmcs.pdcheckermobile.data.services.AuthenticationService
 import ru.mmcs.pdcheckermobile.data.services.SharedPreferencesService
 
@@ -25,17 +26,18 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
-    fun login(username: String, password: String, name: String, role: String) {
+    fun onBtnActionPressed(username: String, password: String, name: String, role: String) {
         _isLoading.value = true
-        if(isRegistrationMode.value!!){
-            return
-        }
         viewModelScope.launch {
-            val result = loginRepository.login(username, password)
+            val result : Result<User> = if(isRegistrationMode.value!!){
+                loginRepository.register(username, password, name, role)
+            }else{
+                loginRepository.login(username, password)
+            }
 
             if (result is Result.Success) {
                 _loginResult.value =
-                    LoginResult(success = true)
+                    LoginResult(success = true, role = result.data.role)
             } else {
                 Log.d("Error",result.toString())
                 _loginResult.value = LoginResult(error = R.string.login_failed)
@@ -71,6 +73,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
 
     data class LoginResult(
         val success: Boolean = false,
+        val role: String? = null,
         val error: Int? = null
     )
 
@@ -79,7 +82,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
                 return LoginViewModel(
-                    loginRepository = LoginRepository(
+                    loginRepository = LoginRepository.createInstance(
                         authService = AuthenticationService(queue),
                         spService = SharedPreferencesService()
                     )

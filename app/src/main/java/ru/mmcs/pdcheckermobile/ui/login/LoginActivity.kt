@@ -1,22 +1,18 @@
 package ru.mmcs.pdcheckermobile.ui.login
 
 import android.app.Activity
+import android.content.Intent
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import android.widget.Toast
 import com.android.volley.toolbox.Volley
 import ru.mmcs.pdcheckermobile.databinding.ActivityLoginBinding
 
-import ru.mmcs.pdcheckermobile.R
 import ru.mmcs.pdcheckermobile.ui.login.viewmodels.LoginViewModel
+import ru.mmcs.pdcheckermobile.ui.main.MainActivity
 import ru.mmcs.pdcheckermobile.utils.Extensions.afterTextChanged
 
 class LoginActivity : AppCompatActivity() {
@@ -32,8 +28,7 @@ class LoginActivity : AppCompatActivity() {
 
         loginViewModel = ViewModelProvider(this,
             LoginViewModel.LoginViewModelFactory(Volley.newRequestQueue(this))
-        )
-            .get(LoginViewModel::class.java)
+        ).get(LoginViewModel::class.java)
 
         binding.viewModel = loginViewModel
         binding.lifecycleOwner = this
@@ -63,10 +58,10 @@ class LoginActivity : AppCompatActivity() {
                 showLoginFailed(loginResult.error)
             }
             if (loginResult.success) {
-                // TODO
+                startActivity(Intent(this, MainActivity::class.java).putExtra("role", loginResult.role))
+                setResult(Activity.RESULT_OK)
+                finish()
             }
-            setResult(Activity.RESULT_OK)
-//            finish()
         })
 
         binding.username.afterTextChanged {
@@ -85,7 +80,7 @@ class LoginActivity : AppCompatActivity() {
             }
 
             binding.login.setOnClickListener {
-                loginViewModel.login(binding.username.text.toString(), binding.password.text.toString(), binding.name.text.toString(), if (binding.role.isChecked) "judge" else "student")
+                loginViewModel.onBtnActionPressed(binding.username.text.toString(), binding.password.text.toString(), binding.name.text.toString(), if (binding.role.isChecked) "judge" else "student")
             }
         }
     }

@@ -29,6 +29,37 @@ class AuthenticationService(val requestQueue: RequestQueue) {
             { error ->
                 cont.resume(Result.Error(error))
             }
+        ).setRetryPolicy(
+            DefaultRetryPolicy(
+                15000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+            )
+        )
+        requestQueue.add(jsonObjectRequest)
+    }
+
+    suspend fun register(username: String, password: String, name: String, role: String) = suspendCoroutine<Result<JSONObject>>{ cont ->
+        val payload = JSONObject()
+            .put("login", username)
+            .put("password", password)
+            .put("name", name)
+            .put("role", role)
+
+        val jsonObjectRequest = JsonObjectRequest(
+            Request.Method.POST, baseUrl + "register", payload,
+            { response ->
+                cont.resume(Result.Success(response))
+            },
+            { error ->
+                cont.resume(Result.Error(error))
+            }
+        ).setRetryPolicy(
+            DefaultRetryPolicy(
+                15000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+            )
         )
         requestQueue.add(jsonObjectRequest)
     }
@@ -44,8 +75,7 @@ class AuthenticationService(val requestQueue: RequestQueue) {
             { error ->
                 cont.resume(Result.Error(error))
             }
-        )
-        jsonObjectRequest.setRetryPolicy(
+        ).setRetryPolicy(
             DefaultRetryPolicy(
                 15000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,

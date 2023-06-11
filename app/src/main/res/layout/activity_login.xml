@@ -84,6 +84,8 @@
             android:layout_height="wrap_content"
             android:visibility="@{(viewModel.isRegistrationMode()) ? View.VISIBLE : View.GONE}"
             android:layout_marginTop="8dp"
+            app:thumbTint="@color/switch_thumb"
+            app:trackTint="@color/switch_track"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/name" />

@@ -6,27 +6,36 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.android.volley.toolbox.Volley
 import ru.mmcs.pdcheckermobile.R
+import ru.mmcs.pdcheckermobile.databinding.FragmentStudentBinding
 
 class StudentFragment : Fragment() {
-
-    companion object {
-        fun newInstance() = StudentFragment()
-    }
-
     private lateinit var viewModel: StudentViewModel
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(StudentViewModel::class.java)
-        // TODO: Use the ViewModel
-    }
+    private var _binding: FragmentStudentBinding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.fragment_student, container, false)
+        _binding = FragmentStudentBinding.inflate(inflater, container, false)
+        viewModel = ViewModelProvider(this,
+            StudentViewModel.StudentViewModelFactory(Volley.newRequestQueue(context))
+        ).get(StudentViewModel::class.java)
+
+        _binding?.viewModel = viewModel
+        _binding?.lifecycleOwner = this
+        setupBinding()
+        return _binding!!.root
+    }
+
+    private fun setupBinding() {
+
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }

@@ -1,12 +1,17 @@
 package ru.mmcs.pdcheckermobile.data
 
+import ru.mmcs.pdcheckermobile.data.models.Project
 import ru.mmcs.pdcheckermobile.data.services.ApiService
 import ru.mmcs.pdcheckermobile.data.services.AuthenticationService
 import ru.mmcs.pdcheckermobile.data.services.SharedPreferencesService
+import ru.mmcs.pdcheckermobile.utils.Result
 
 class ProjectRepository(val spService: SharedPreferencesService, val apiService: ApiService) {
 
 
+    suspend fun getProjectInfo(): Result<Project> {
+        return apiService.getProjectInfo(spService.readJwtToken() ?: "")
+    }
 
     // Dagger, pls come and help me
     companion object{

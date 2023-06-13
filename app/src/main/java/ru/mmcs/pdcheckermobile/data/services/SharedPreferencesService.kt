@@ -14,9 +14,23 @@ class SharedPreferencesService {
             ?.apply()
     }
 
+    fun saveRole(role: String){
+        App.appContext
+            ?.getSharedPreferences("ru.mmcs.pdchecker", Context.MODE_PRIVATE)
+            ?.edit()
+            ?.putString("role", role)
+            ?.apply()
+    }
+
     fun readJwtToken(): String?{
         return App.appContext
             ?.getSharedPreferences("ru.mmcs.pdchecker", Context.MODE_PRIVATE)
-            ?.getString("jwt","")
+            ?.getString("jwt",null)
+    }
+
+    fun readRole(): String?{
+        return App.appContext
+            ?.getSharedPreferences("ru.mmcs.pdchecker", Context.MODE_PRIVATE)
+            ?.getString("role",null)
     }
 }

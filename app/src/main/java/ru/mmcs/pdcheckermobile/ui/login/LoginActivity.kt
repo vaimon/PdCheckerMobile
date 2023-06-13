@@ -32,6 +32,10 @@ class LoginActivity : AppCompatActivity() {
 
         binding.viewModel = loginViewModel
         binding.lifecycleOwner = this
+        val role = loginViewModel.checkUserRole()
+        if(role != null){
+            endAuthorization(role)
+        }
 
         binding.modeToggle.setOnClickListener {
             loginViewModel.toggleMode()
@@ -58,9 +62,7 @@ class LoginActivity : AppCompatActivity() {
                 showLoginFailed(loginResult.error)
             }
             if (loginResult.success) {
-                startActivity(Intent(this, MainActivity::class.java).putExtra("role", loginResult.role))
-                setResult(Activity.RESULT_OK)
-                finish()
+                endAuthorization(loginResult.role)
             }
         })
 
@@ -83,6 +85,12 @@ class LoginActivity : AppCompatActivity() {
                 loginViewModel.onBtnActionPressed(binding.username.text.toString(), binding.password.text.toString(), binding.name.text.toString(), if (binding.role.isChecked) "judge" else "student")
             }
         }
+    }
+
+    fun endAuthorization(role: String?){
+        startActivity(Intent(this, MainActivity::class.java).putExtra("role", role))
+        setResult(Activity.RESULT_OK)
+        finish()
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {

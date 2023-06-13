@@ -26,6 +26,10 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
+    fun checkUserRole() : String?{
+        return loginRepository.fetchRole()
+    }
+
     fun onBtnActionPressed(username: String, password: String, name: String, role: String) {
         _isLoading.value = true
         viewModelScope.launch {
@@ -36,10 +40,11 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
             }
 
             if (result is Result.Success) {
+                loginRepository.saveRole(result.data.role)
                 _loginResult.value =
                     LoginResult(success = true, role = result.data.role)
             } else {
-                Log.d("Error",result.toString())
+                Log.d("Error",(result as Result.Error).exception.toString())
                 _loginResult.value = LoginResult(error = R.string.login_failed)
             }
             _isLoading.value = false

@@ -6,6 +6,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.volley.toolbox.Volley
 import ru.mmcs.pdcheckermobile.R
 import ru.mmcs.pdcheckermobile.databinding.FragmentJudgeBinding
@@ -31,7 +33,11 @@ class JudgeFragment : Fragment() {
     }
 
     private fun setupBinding() {
-
+        _binding?.rvProjects?.apply {
+            adapter = viewModel.projectsRvAdapter
+            layoutManager = LinearLayoutManager(context)
+            addItemDecoration(DividerItemDecoration(context,DividerItemDecoration.VERTICAL))
+        }
     }
 
     override fun onDestroyView() {

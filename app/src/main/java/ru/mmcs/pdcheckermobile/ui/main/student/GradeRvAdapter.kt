@@ -24,7 +24,7 @@ class GradeRvAdapter (
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
         holder.binding.description.text = item?.feedback
-        holder.binding.description.text = "%.1f".format(item?.points)
+        holder.binding.grade.text = "%.1f".format(item?.points)
     }
 
     override fun getItemCount(): Int = items.size

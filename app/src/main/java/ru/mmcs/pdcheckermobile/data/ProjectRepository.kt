@@ -1,5 +1,6 @@
 package ru.mmcs.pdcheckermobile.data
 
+import android.util.Log
 import ru.mmcs.pdcheckermobile.data.models.Project
 import ru.mmcs.pdcheckermobile.data.services.ApiService
 import ru.mmcs.pdcheckermobile.data.services.AuthenticationService
@@ -11,6 +12,10 @@ class ProjectRepository(val spService: SharedPreferencesService, val apiService:
 
     suspend fun getProjectInfo(): Result<Project> {
         return apiService.getProjectInfo(spService.readJwtToken() ?: "")
+    }
+
+    suspend fun getAllProjects(): Result<List<Project>> {
+        return apiService.getProjects(spService.readJwtToken() ?: "")
     }
 
     // Dagger, pls come and help me

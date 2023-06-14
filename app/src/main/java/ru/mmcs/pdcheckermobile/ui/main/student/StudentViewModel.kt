@@ -1,5 +1,6 @@
 package ru.mmcs.pdcheckermobile.ui.main.student
 
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -24,6 +25,7 @@ class StudentViewModel(val repository: ProjectRepository) : ViewModel() {
             val result = repository.getProjectInfo()
             if(result is Result.Success){
                 project.value = result.data
+                gradeRvAdapter.updateItems(result.data.grades)
             }
             isLoadingInProgress.value = false
         }

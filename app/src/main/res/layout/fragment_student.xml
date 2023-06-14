@@ -60,7 +60,7 @@
             android:autoLink="web"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="@{viewModel.project.buildUrl}"
+            android:text="@{viewModel.project.buildUrl.length() == 0 ? @string/no_link : viewModel.project.buildUrl}"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@+id/textView"
             app:layout_constraintEnd_toEndOf="parent"
